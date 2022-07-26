@@ -1,92 +1,133 @@
 ﻿#include <iostream>
 #include <conio.h>
 
-void Status(int Hp, int Att) 
+class Player
 {
-    printf_s("----------------------------------------------------\n");
-    printf_s("Hp %d\n", Hp);
-    printf_s("Att %d\n", Att);
-    printf_s("----------------------------------------------------\n");
-}
+private:
+    int Hp;
+    int Att;
 
-enum ATTACKER_TYPE
-{
-    PLAYER,
-    MONSTER,
+public:
+    void StatusRender()
+    {
+        printf_s("플레이어의 능력치 ------------------------------------\n");
+        printf_s("Hp %d\n", Hp);
+        printf_s("Att %d\n", Att);
+        printf_s("----------------------------------------------------\n");
+    }
+
+    int GetAtt()
+    {
+        return this->Att;
+    }
+
+    int IsDeath()
+    {
+        return this->Hp <= 0;
+    }
+
+    void Damage(int _Att)
+    {
+        printf_s("플레이어가 %d의 데미지를 입었습니다.\n", _Att);
+        Hp -= _Att;
+    }
+
+public:
+    Player(int _Hp, int _Att) : Hp(_Hp), Att(_Att)
+    {
+
+    }
 };
 
-void Damage(int* _PlayerHp, int _PlayerAtt, int* _MonHP, int _MonAtt, ATTACKER_TYPE _Type) 
+class Monster
 {
-    int* Hp = nullptr;
-    int Att = 0;
+private:
+    int Hp;
+    int Att;
 
-    switch (_Type)
+public:
+    void StatusRender()
     {
-    case PLAYER:
-        Hp = _PlayerHp;
-        Att = _MonAtt;
-        *Hp -= Att;
-        break;
-    case MONSTER:
-        Hp = _MonHP;
-        Att = _PlayerAtt;
-        *Hp -= Att;
-        break;
+        printf_s("몬스터의 능력치 -------------------------------------\n");
+        printf_s("Hp %d\n", Hp);
+        printf_s("Att %d\n", Att);
+        printf_s("----------------------------------------------------\n");
     }
 
-
-    system("cls");
-
-    printf_s("플레이어 스테이터스\n");
-    Status(*_PlayerHp, _PlayerAtt);
-    printf_s("몬스터 스테이터스\n");
-    Status(*_MonHP, _MonAtt);
-
-    switch (_Type)
+    int IsDeath()
     {
-    case PLAYER:
-        printf_s("플레이어가 ");
-        break;
-    case MONSTER:
-        printf_s("몬스터가 ");
-        break;
+        return this->Hp <= 0;
     }
 
+    int GetAtt()
+    {
+        return this->Att;
+    }
 
-    printf_s("%d의 데미지를 입었습니다.\n", Att);
+    void Damage(int _Att)
+    {
+        printf_s("몬스터가 %d의 데미지를 입었습니다.\n", _Att);
+        Hp -= _Att;
+    }
 
+public:
+    Monster(int _Hp, int _Att) : Hp(_Hp), Att(_Att)
+    {
 
-}
+    }
 
-int PlayerHp = 100;
+};
 
+class FightZone
+{
+public:
+    void Fight(Player* _Player, Monster* _Monster)
+    {
+        while (true)
+        {
+            system("cls");
+
+            _Player->StatusRender();
+            _Monster->StatusRender();
+            _getch();
+            _Monster->Damage(_Player->GetAtt());
+            {
+                system("cls");
+                _Player->StatusRender();
+                _Monster->StatusRender();
+                printf_s("몬스터가 %d의 데미지를 입었습니다.\n", _Player->GetAtt());
+            }
+            if (true == _Monster->IsDeath())
+            {
+                printf_s("몬스터가 죽었습니다");
+                return;
+            }
+            _getch();
+            _Player->Damage(_Monster->GetAtt());
+            {
+                system("cls");
+                _Player->StatusRender();
+                _Monster->StatusRender();
+                printf_s("몬스터가 %d의 데미지를 입었습니다.\n", _Player->GetAtt());
+                printf_s("플레이어가 %d의 데미지를 입었습니다.\n", _Monster->GetAtt());
+            }
+            if (true == _Player->IsDeath())
+            {
+                printf_s("플레이어가 죽었습니다");
+                return;
+            }
+            _getch();
+        }
+    }
+};
+
+// 전역 함수나 전역 변수는 객체와 멀어진겁니다.
+// main 객체지향에서 => 
 int main()
 {
-    int PlayerAtt = 10;
-    int MonsterHp = 100;
-    int MonsterAtt = 10;
+    Player NewPlayer = Player(100, 10);
+    Monster NewMonster = Monster(100, 10);
+    FightZone Zone;
 
-    while (PlayerHp)
-    {
-        // 콘솔화면을 한번 깨끗하게 삭제해주는 함수
-        system("cls");
-
-        printf_s("플레이어 스테이터스\n");
-        Status(PlayerHp, PlayerAtt);
-        printf_s("몬스터 스테이터스\n");
-        Status(MonsterHp, MonsterAtt);
-
-        _getch();
-        Damage(&PlayerHp, PlayerAtt, &MonsterHp, MonsterAtt, PLAYER);
-
-        _getch();
-        Damage(&PlayerHp, PlayerAtt, &MonsterHp, MonsterAtt, MONSTER);
-
-        if (0 < PlayerHp)
-        {
-            printf_s("플레이어는 생존했습니다.\n");
-        }
-
-        _getch();
-    }
+    Zone.Fight(&NewPlayer, &NewMonster);
 }
